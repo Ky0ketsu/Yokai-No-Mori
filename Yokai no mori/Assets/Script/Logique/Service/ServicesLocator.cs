@@ -8,46 +8,48 @@ public static class ServicesLocator
 
     public static void Register<TService>(TService service)
     {
-        try
+        if (service == null)
         {
-            if (services[typeof(TService)] == null)
-            {
-                Debug.LogWarning("Le service")
-            }
+            Debug.LogError("Impossible d'enregistrer un service null");
+            return;
+        }
 
-            services[typeof(TService)] = service;
-            Debug.Log($"{service} a etais enregistrer");
-        }
-        catch
+        var type = typeof(TService);
+
+        if (services.ContainsKey(type))
         {
-            Debug.LogError($"{service} n'a pas etais enregistrer");
-            services[typeof(TService)] = null;
+            Debug.LogWarning($"{type.Name} existe déja");
+            return;
         }
+
+        services[type] = service;
+        Debug.Log($"{type.Name} a etais enregistrer");
     }
 
     public static void Unregister<TService>(TService service)
     {
-        try
+        var type = typeof(TService);
+
+        if(services.Remove(type))
         {
-            services[typeof(TService)] = null;
-            Debug.Log($"{service} a etais supprimer");
+            Debug.Log($"{type.Name} a etais supprimer");
         }
-        catch
+        else
         {
-            Debug.LogWarning($"{service} n'a pas pu être supprimer");
+            Debug.LogWarning($"{type.Name} n'a pas pu être supprimer");
         }
     }
 
     public static TService Get<TService>()
     {
-        try
+        var type = typeof(TService);
+
+        if (services.TryGetValue(type, out var service))
         {
-            return (TService)services[typeof(TService)];
+            return (TService)service;
         }
-        catch
-        {
-            Debug.LogError($"{services[typeof(TService)]} n'est pas dans la liste des service");
-            return  default;
-        }
+
+        Debug.LogError($"{type.Name} n'est pas enregistré");
+        return default;
     }
 }

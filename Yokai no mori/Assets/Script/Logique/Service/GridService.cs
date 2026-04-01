@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
+using static UnityEngine.Audio.ProcessorInstance;
 
 public class GridService : MonoBehaviour
 {
@@ -11,9 +13,18 @@ public class GridService : MonoBehaviour
     public GridSystem<Tile> grid;
     public GameObject prefab; 
     public Transform parent;
+    public Pawn[,] pawnPosition ;
 
+    private void OnEnable()
+    {
+        ServicesLocator.Register(this);
+    }
+    private void OnDisable()
+    {
+        ServicesLocator.Unregister(this);
+    }
 
-    public void Start()
+    private void Start()
     {
         GenerateGrid();
     }
@@ -30,5 +41,23 @@ public class GridService : MonoBehaviour
                     return tile;
                 }
             );
+        Debug.Log("Logique grid généré");
+
+        Events.InvokeGenerateGridVisual(width, height, cellSize, origin, prefab);
+    }
+
+    public Pawn GetPawn(Vector2Int pos)
+    {
+        if (!grid.GetGridObject(pos.x, pos.y)) return null;
+        return pawnPosition[pos.x, pos.y];
+    }
+
+    public void MovePiece(Pawn pawn, Vector2Int target)
+    {
+        pawnPosition[pawn.position.x, pawn.position.y] = null;
+
+        pawn.position = target;
+
+        pawnPosition[target.x, target.y] = pawn;
     }
 }
